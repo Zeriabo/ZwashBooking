@@ -7,15 +7,14 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.zwash.auth.pojos.Car;
+import com.zwash.auth.exceptions.UserIsNotFoundException;
 import com.zwash.auth.service.CarService;
 import com.zwash.auth.service.UserService;
 import com.zwash.booking.dto.BookingDTO;
-import com.zwash.booking.exceptions.UserIsNotFoundException;
 import com.zwash.booking.pojos.Booking;
-
 import com.zwash.booking.pojos.CarWashingProgram;
 import com.zwash.booking.service.CarWashingProgramService;
+import com.zwash.common.pojos.Car;
 
 
 
@@ -40,7 +39,7 @@ public class BookingMapperImpl implements BookingMapper {
         bookingDTO.setUserId(booking.getUser().getId());
         bookingDTO.setCarId(booking.getCar().getCarId());
         bookingDTO.setWashingProgramId(booking.getWashingProgram().getId());
-        
+
         return bookingDTO;
     }
 

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    h2 {
+      color: #555;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #777;
+      margin-bottom: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th {
+      background-color: #f2f2f2;
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
+    }
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+    }
+    .code {
+      font-family: Consolas, monospace;
+      background-color: #f5f5f5;
+      padding: 5px;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+    }
+	</style>
+  <title>Car Wash App</title>
+</head>
+
+<body>
+  <h1>ZWash App</h1>
+  <p>Welcome to ZWash the Car Wash App! Our application provides a convenient way for users to register, sign in, register their cars, view available car wash stations, choose a station, and purchase a car wash. With our app, you can keep your car clean and shiny with just a few taps on your mobile device.</p>
+
+  <h2>Features</h2>
+  <ol>
+    <li><strong>User Registration and Sign-In:</strong> New users can easily create an account by registering with their personal information. Once registered, users can sign in securely to access the full functionality of the app.</li>
+    <li><strong>Car Registration:</strong> Users can register their cars within the app by providing details such as car make, model, and license plate number. This feature allows for easy identification of the user's car during the car wash process.</li>
+    <li><strong>View Available Car Wash Stations:</strong> Users can browse through a list of available car wash stations in their area. Each station is listed with essential details such as location, services offered, and pricing.</li>
+    <li><strong>Choose a Station:</strong> Users can select their preferred car wash station based on their location or personal preference. The app provides detailed information about each station, including customer ratings and reviews to help users make an informed choice.</li>
+    <li><strong>Purchase a Car Wash:</strong> Once a station is selected, users can proceed to purchase a car wash service directly from the app. Various wash packages and additional services may be available for users to choose from. Secure payment options are integrated into the app to ensure a seamless transaction experience.</li>
+    <li><strong>Track Wash Status:</strong> Users can track the status of their car wash request, including the estimated time for the service to be completed. Notifications may be sent to keep users informed about the progress of their car wash.</li>
+    <li><strong>Review and Feedback:</strong> After the car wash is completed, users can provide feedback and ratings for the service received. This helps other users make informed decisions and allows car wash stations to maintain and improve their service quality.</li>
+  </ol>
+  <p>Experience the convenience and efficiency of our Car Wash App today! Register,
+</p>
+<h1>User Controller</h1>
+  <p>The User Controller is responsible for handling user-related operations in the Car Wash App.</p>
+
+  <h2>Endpoints</h2>
+  <table>
+    <tr>
+      <th>HTTP Method</th>
+      <th>Endpoint</th>
+      <th>Description</th>
+      <th>Request Body</th>
+      <th>Response</th>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/users/signin</td>
+      <td>Signs in an existing user.</td>
+      <td>SignInfo</td>
+      <td>LoggedUser</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/users/register</td>
+      <td>Registers a new user.</td>
+      <td>User</td>
+      <td>String</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/users/changepassword</td>
+      <td>Change password for a user.</td>
+      <td>User</td>
+      <td>String</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td>/users/validate</td>
+      <td>Validates if the user is signed in.</td>
+      <td>Query Parameter: token</td>
+      <td>Response</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/users/getsecrets</td>
+      <td>Get secret question and answer for a user.</td>
+      <td>User</td>
+      <td>Response</td>
+    </tr>
+  </table>
+
+  <h2>Sign In</h2>
+  <p>Endpoint: POST /users/signin</p>
+  <p>Description: Signs in an existing user.</p>
+  <p>Request Body:</p>
+  <pre>
+    {
+	  "@class": "com.zwash.pojos.SignInfo",
+      "username": "string",
+      "password": "string"
+    }
+  </pre>
+  <p>Response Body:</p>
+  <pre>
+    {
+      "id": "string",
+      "username": "string",
+      "token": "string",
+      "isActive": true,
+      "deviceRegistrationToken": "string"
+    }
+  </pre>
+
+  <h2>Register</h2>
+  <p>Endpoint: POST /users/register</p>
+  <p>Description: Registers a new user.</p>
+  <p>Request Body:</p>
+  <pre>
+    {
+	"@class": "com.zwash.pojos.User",
+      "username": "string",
+      "password": "string",
+      "email": "string",
+      "name": "string"
+    }
+  </pre>
+  <p>Response Body:</p>
+  <pre>
+    "User created successfully."
+  </pre>
+
+  <h2>Change Password</h2>
+  <p>Endpoint: POST /users/changepassword</p>
+  <p>Description: Change password for a user.</p>
+  <p>Request Body:</p>
+  <pre>
+    {
+	  "@class": "com.zwash.pojos.User",
+      "username": "string",
+      "password": "string",
+      "token": "string"
+    }
+  </pre>
+  <p>Response Body:</p>
+  <pre>
+    "Password changed successfully."
+  </pre>
+
+  <h2>Validate User</h2>
+  <p>Endpoint: GET /users/validate</p>
+  <p>Description: Validates if the user is signed in.</p>
+  <p>Query Parameter:</p>
+  <pre>
+    token: string
+  </pre>
+  <p>Response Body:</p>
+  <pre>
+    {
+      "isValid": true
+    }
+  </pre>
+
+  <h2>Get User's Secret Question and Answer</h2>
+  <p>Endpoint: POST /users/getsecrets</p>
+  <p>Description: Get secret question and answer for a user.</p>
+  <p>Request Body:</p>
+  <pre>
+    {
+      "username": "string"
+    }
+  </pre>
+  <p>Response Body:</p>
+  <pre>
+    {
+      "question": "string",
+      "answer": "string"
+    }
+  </pre>
+
+  <h2>Error Responses</h2>
+  <p>If there are any errors in the requests, the server will respond with appropriate error messages along with the corresponding HTTP status codes.</p>
+  <ul>
+    <li>400 Bad Request: The request is invalid or missing required parameters.</li>
+    <li>401 Unauthorized: The user is not authorized to perform the requested operation.</li>
+    <li>404 Not Found: The requested resource or endpoint does not exist.</li>
+    <li>500 Internal Server Error: An unexpected error occurred on the server.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>The User Controller in the Car Wash App provides endpoints for user registration, sign-in, password management, validation, and retrieving secret question and answer. By using these endpoints, the app can securely manage user accounts and provide necessary functionalities to ensure a smooth user experience.</p>
+<h1>Station Controller</h1>
+<table>
+  <tr>
+    <th>Endpoint</th>
+    <th>Description</th>
+    <th>Request Method</th>
+  </tr>
+  <tr>
+    <td>/v1/stations/</td>
+    <td>Retrieves all stations.</td>
+    <td>GET</td>
+  </tr>
+  <tr>
+    <td>/v1/stations/washes</td>
+    <td>Retrieves all washes available at a specific station.</td>
+    <td>GET</td>
+  </tr>
+  <tr>
+    <td>/v1/stations/</td>
+    <td>Creates a new station.</td>
+    <td>POST</td>
+
+      
+  </tr>
+  <tr>
+    <td>/v1/stations/{id}</td>
+    <td>Retrieves a specific station by ID.</td>
+    <td>GET</td>
+  </tr>
+  <tr>
+    <td>/v1/stations/{id}</td>
+    <td>Updates a specific station by ID.</td>
+    <td>PUT</td>
+  </tr>
+  <tr>
+    <td>/v1/stations/{id}</td>
+    <td>Deletes a specific station by ID.</td>
+    <td>DELETE</td>
+  </tr>
+</table>
+<b>Endpoint: /v1/stations/</b>
+
+<p>Description: Retrieves all stations.</p>
+<p>Request Method: GET</p>
+<b>Endpoint: /v1/stations/washes</b>
+
+<p>Description: Retrieves all washes available at a specific station.</p>
+<p>Request Method: GET</p>
+<b>Endpoint: /v1/stations/</b>
+
+<p>Description: Creates a new station.</p>
+<p>Request Method: POST</p>
+    <td><p>Request Body:</p>
+  <pre>
+    {
+  "@class": "com.zwash.dto.StationDTO",
+  "name": "string",
+  "address":"string",
+  "latitude": long,
+  "longitude": long,
+ "programs":  null || array of programs
+    }
+  </pre></td>
+<b>Endpoint: /v1/stations/{id}</b>
+
+<p>Description: Retrieves a specific station by ID.</p>
+<p>Request Method: GET</p>
+<b>Endpoint: /v1/stations/{id}</b>
+
+<p>Description: Updates a specific station by ID.</p>
+<p>Request Method: PUT</p>
+<b>Endpoint: /v1/stations/{id}</b>
+
+<p>Description: Deletes a specific station by ID.</p>
+<p>Request Method: DELETE</p>
+Please note that all endpoints require authentication.  <h1>Media Controller</h1>
+<p>This documentation provides details about the Media Controller in the Car Wash API.</p>
+<h2>Endpoints</h2>
+<h3>Upload a Picture for a Station</h3>
+<p>Uploads a picture for a specified station.</p>
+<pre><code>POST /v1/media/uploadPicture</code></pre>
+<h4>Parameters</h4>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>picture</td>
+    <td>file</td>
+    <td>The picture file to upload.</td>
+  </tr>
+  <tr>
+    <td>stationId</td>
+    <td>Long</td>
+    <td>The ID of the station.</td>
+  </tr>
+</table>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Response Body</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Successfully uploaded</td>
+    <td>The updated Station object.</td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td>Station not found</td>
+    <td>Error message indicating that the station with the specified ID was not found.</td>
+  </tr>
+</table>
+<h3>Upload a Logo for a Station</h3>
+<p>Uploads a logo for a specified station.</p>
+<pre><code>POST /v1/media/uploadLogo</code></pre>
+<h4>Parameters</h4>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>logo</td>
+    <td>file</td>
+    <td>The logo file to upload.</td>
+  </tr>
+  <tr>
+    <td>stationId</td>
+    <td>Long</td>
+    <td>The ID of the station.</td>
+  </tr>
+</table>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Response Body</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Successfully uploaded</td>
+    <td>The updated Station object.</td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td>Station not found</td>
+    <td>Error message indicating that the station with the specified ID was not found.</td>
+  </tr>
+</table>
+<h1>Car Washing Program Controller</h1>
+<p>This documentation provides details about the Car Washing Program Controller in the Car Wash API.</p>
+<h2>Endpoints</h2>
+<h3>Add a New Car Washing Program</h3>
+<p>Adds a new car washing program.</p>
+<pre><code>POST /v1/programs/</code></pre>
+<h4>Request Body</h4>
+<p>The request body should contain the details of the car washing program to be added.</p>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Response Body</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Washing program added successfully</td>
+    <td>Boolean value indicating the success of the operation.</td>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td>Invalid input</td>
+    <td>Error message indicating that the input for the car washing program is invalid.</td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td>Internal Server Error</td>
+    <td>Error message indicating that the server encountered an error while adding the washing program.</td>
+  </tr>
+</table>
+<h3>Remove a Car Washing Program</h3>
+<p>Removes a car washing program.</p>
+<pre><code>POST /v1/programs/{id}</code></pre>
+<h4>Request Body</h4>
+<p>The request body should contain the car washing program object to be removed.</p>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Washing program removed successfully</td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td>Washing program not found</td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td>Internal Server Error</td>
+  </tr>
+</table>
+<h3>Get all Car Washing Programs</h3>
+<p>Retrieves all car washing programs for a specified station.</p>
+<pre><code>GET /v1/programs/</code></pre>
+<h4>Query Parameters</h4>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>stationId</td>
+    <td>Long</td>
+    <td>The ID of the station.</td>
+  </tr>
+</table>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Response Body</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Washing programs retrieved successfully</td>
+    <td>List of CarWashingProgram objects.</td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td>Washing programs not found</td>
+    <td>Error message indicating that no washing programs were found for the specified station.</td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td>Internal Server Error</td>
+    <td>Error message indicating that the server encountered an error while retrieving the washing programs.</td>
+     </tr>
+</table>
+<h3>Get all Car Washing Programs</h3>
+<p>Retrieves all car washing programs.</p>
+<pre><code>GET /v1/programs/all</code></pre>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Response Body</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Washing programs retrieved successfully</td>
+    <td>List of CarWashingProgram objects.</td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td>Internal Server Error</td>
+    <td>Error message indicating that the server encountered an error while retrieving the washing programs.</td>
+  </tr>
+</table>
+<h3>Start a Car Washing Program</h3>
+<p>Starts a car washing program.</p>
+<pre><code>POST /v1/programs/{id}/start</code></pre>
+<h4>Request Body</h4>
+<p>The request body should contain the car washing program object to be started.</p>
+<h4>Responses</h4>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td>Washing program started successfully</td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td>Washing program not found</td>
+  </tr>
+  <tr>
+    <td>500</td>
+    <td>Internal Server Error</td>
+  </tr>
+</table>
+<h1>Car Wash Controller</h1>
+<p>The Car Wash Controller handles requests related to executing car washes.</p>
+<h2>Endpoint</h2>
+
+  <table>
+    <tr>
+      <th>HTTP Method</th>
+      <th>Endpoint</th>
+      <th>Description</th>
+      <th>Request Body</th>
+      <th>Response</th>
+      <th>Error Responses</th>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/v1/car-wash</td>
+      <td>Execute a car wash</td>
+      <td>Booking</td>
+      <td>String</td>
+      <td>
+        <ul>
+          <li>400: Invalid request</li>
+          <li>404: Car not found</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <h3>POST /v1/car-wash</h3>
+
+  <p>Executes a car wash based on the provided booking details.</p>
+
+  <h4>Request Body</h4>
+
+  <p>The request body should contain the details of the booking in the following format:</p>
+
+  <pre>
+{
+  "scheduledTime": "2023-05-23T12:00:00",
+  "executed": false,
+  "car": {
+    "registerationPlate": "ABC123"
+    // Other car details...
+  },
+  // Other booking details...
+}
+  </pre>
+
+  <h4>Response</h4>
+
+  <p>If the car wash is executed successfully, the API will respond with a status of 200 (OK) and a response body containing the message "Car wash executed successfully".</p>
+
+  <h4>Error Responses</h4>
+
+  <p>The API may respond with the following error status codes and messages:</p>
+
+  <ul>
+    <li>400 (Bad Request): Indicates an invalid request. The response body will contain an error message describing the issue.</li>
+    <li>404 (Not Found): Indicates that the car associated with the booking was not found.</li>
+  </ul>
+
+  <h3>Example</h3>
+
+  <p>Request:</p>
+
+  <pre>
+POST /v1/car-wash
+
+{
+  "scheduledTime": "2023-05-23T12:00:00",
+  "executed": false,
+  "car": {
+    "registerationPlate": "ABC123"
+  }
+}
+  </pre>
+
+  <p>Response:</p>
+
+  <pre>
+HTTP/1.1 200 OK
+
+"Car wash executed successfully"
+  </pre>
+
+  <p>In case of an error, the response would contain the appropriate error status code and message.</p>
+ 
+ <h1>Car Controller API Documentation</h1>
+
+  <h2>Endpoint</h2>
+
+  <table>
+    <tr>
+      <th>HTTP Method</th>
+      <th>Endpoint</th>
+      <th>Description</th>
+      <th>Request Body</th>
+      <th>Response</th>
+      <th>Error Responses</th>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/v1/cars/register</td>
+      <td>Register a new car</td>
+      <td>UserCar</td>
+      <td>Car</td>
+      <td>
+        <ul>
+          <li>202: Car registered successfully</li>
+          <li>500: Internal server error</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td>/v1/cars/{registrationPlate}</td>
+      <td>Get car details by registration plate</td>
+      <td>N/A</td>
+      <td>Car</td>
+      <td>
+        <ul>
+          <li>200: Car details retrieved successfully</li>
+          <li>404: Car not found</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td>/v1/cars/user/{username}</td>
+      <td>Get all cars owned by a user</td>
+      <td>N/A</td>
+      <td>List&lt;Car&gt;</td>
+      <td>
+        <ul>
+          <li>200: Cars retrieved successfully</li>
+          <li>404: User not found</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/v1/cars/set</td>
+      <td>Set the owner of a car</td>
+      <td>UserCar</td>
+      <td>Void</td>
+      <td>
+        <ul>
+          <li>202: Car owner updated successfully</li>
+          <li>500: Internal server error</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <h3>POST /v1/cars/register</h3>
+
+  <p>Registers a new car based on the provided details.</p>
+
+  <h4>Request Body</h4>
+
+  <p>The request body should contain the details of the car registration in the following format:</p>
+
+  <pre>
+{
+  "registerationPlate": "ABC123",
+  // Other car details...
+}
+  </pre>
+
+  <h4>Response</h4>
+
+  <p>If the car is registered successfully, the API will respond with a status of 202 (Accepted).</p>
+
+  <h4>Error Responses</h4>
+
+  <p>The API may respond with the following error status codes and messages:</p>
+
+  <ul>
+    <li>500 (Internal Server Error): Indicates an internal server error occurred during car registration.</li>
+  </ul>
+
+  <h3>GET /v1/cars/{registrationPlate}</h3>
+
+  <p>Retrieves the details of a car based on the provided registration plate.</p>
+
+  <h4>Response</h4>
+
+  <p>If the car</p>
+     
+<h1>Booking Controller</h1>
+<p>The Booking Controller handles requests related to managing bookings for car washes.</p>
+<h2>Endpoint</h2>
+<table>
+  <tr>
+    <th>HTTP Method</th>
+    <th>Endpoint</th>
+    <th>Description</th>
+    <th>Request Body</th>
+    <th>Response</th>
+    <th>Error Responses</th>
+  </tr>
+  <tr>
+    <td>GET</td>
+    <td>/v1/bookings/{id}</td>
+    <td>Get a booking by ID</td>
+    <td>N/A</td>
+    <td>Booking</td>
+    <td>
+      <ul>
+        <li>200: Successfully retrieved booking</li>
+        <li>404: Booking not found</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>GET</td>
+    <td>/v1/bookings</td>
+    <td>Get all bookings</td>
+    <td>N/A</td>
+    <td>List&lt;BookingDTO&gt;</td>
+    <td>
+      <ul>
+        <li>200: Successfully retrieved bookings</li>
+        <li>404: Bookings not found</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>GET</td>
+    <td>/v1/bookings/user/{id}</td>
+    <td>Get bookings belonging to a User</td>
+    <td>N/A</td>
+    <td>List&lt;BookingDTO&gt;</td>
+    <td>
+      <ul>
+        <li>200: Successfully retrieved bookings</li>
+        <li>404: Bookings not found</li>
+        <li>500: Internal server error</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>POST</td>
+    <td>/v1/bookings</td>
+    <td>Create a booking</td>
+    <td>Booking</td>
+    <td>Booking</td>
+    <td>
+      <ul>
+        <li>201: Successfully created booking</li>
+        <li>400: Invalid request</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>PUT</td>
+    <td>/v1/bookings/{id}</td>
+    <td>Update an existing booking</td>
+    <td>Booking</td>
+    <td>Booking</td>
+    <td>
+      <ul>
+        <li>200: Booking updated successfully</li>
+        <li>400: Invalid request. Check input parameters</li>
+        <li>404: Booking with provided id not found</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>POST</td>
+    <td>/v1/bookings/{id}</td>
+    <td>Execute a Wash</td>
+    <td>N/A</td>
+    <td>Void</td>
+    <td>
+      <ul>
+        <li>204: Wash executed successfully</li>
+        <li>404: Booking with provided id not found</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+	      <td>DELETE</td>
+    <td>/v1/bookings/{id}</td>
+    <td>Delete a booking by id</td>
+    <td>N/A</td>
+    <td>Void</td>
+    <td>
+      <ul>
+	 <li>204: Booking deleted successfully</li>
+        <li>404: Booking with provided id not found</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
+</body>
+
+</html>

@@ -2,11 +2,13 @@ package com.zwash.booking.mapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
+
+import com.zwash.auth.exceptions.UserIsNotFoundException;
 import com.zwash.booking.dto.BookingDTO;
-import com.zwash.booking.exceptions.UserIsNotFoundException;
 import com.zwash.booking.factory.CarWashingProgramFactory;
 import com.zwash.booking.pojos.Booking;
 import com.zwash.booking.pojos.CarWashingProgram;

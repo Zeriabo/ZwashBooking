@@ -53,7 +53,7 @@ public class ServiceProviderUser {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
+
     public String getEmail() {
 		return email;
 	}
@@ -89,13 +89,13 @@ public class ServiceProviderUser {
 
 	    @Column(nullable = false)
 	    private String password;
-	    
+
 	    @Column(nullable = false)
 	    private String email;
-	    
+
 	    @Column(nullable = false)
 	    private String phone;
-	    
 
-	    
+
+
 	}

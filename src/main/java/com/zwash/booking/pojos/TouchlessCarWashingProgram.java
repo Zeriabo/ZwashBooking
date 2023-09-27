@@ -38,7 +38,7 @@ public class TouchlessCarWashingProgram extends CarWashingProgram {
 
     @Override
     public void setBrushType(String brushType) {
-      
+
     }
 
     @Override

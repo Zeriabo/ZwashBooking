@@ -6,9 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
+import com.zwash.booking.exceptions.ProgramAlreadyExistsException;
+import com.zwash.booking.exceptions.StationNotExistsException;
 import com.zwash.booking.pojos.CarWashingProgram;
 import com.zwash.booking.pojos.Station;
+import com.zwash.booking.repository.CarWashingProgramRepository;
 import com.zwash.booking.service.CarWashingProgramService;
+import com.zwash.booking.service.StationService;
 
 
 
@@ -62,7 +66,7 @@ public class CarWashingProgramServiceImpl implements CarWashingProgramService {
 	@Override
 	public CarWashingProgram getProgramById(Long id) {
 		return programRepository.findById(id).orElse(null);
-	
+
 	}
 
 	@Override
@@ -91,7 +95,7 @@ public class CarWashingProgramServiceImpl implements CarWashingProgramService {
 
 	@Override
 	public CarWashingProgram getCarWashProgramById(Long carWashProgramId) {
-		
+
 		return programRepository.getReferenceById(carWashProgramId);
 	}
 

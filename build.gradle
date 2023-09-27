@@ -20,17 +20,20 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux:2.4.5'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.0'
     implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
-
+  	implementation project(':ZwashCommon')
+    implementation project(':ZwashAuthentication')
+  	//kafka 
+     implementation 'org.springframework.kafka:spring-kafka:3.0.11'
+     
     //Jackson
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
-    
+ 
     //GraphQl
       implementation 'org.springframework.boot:spring-boot-starter-graphql'
 
      implementation ('com.graphql-java-kickstart:graphql-java-tools:13.0.3') {
     exclude group: 'com.google.guava'
-}
-
+  }
 
     // Google Auth Library
     implementation group: 'org.jasypt', name: 'jasypt', version: '1.9.3'
@@ -49,6 +52,6 @@ dependencies {
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
-	

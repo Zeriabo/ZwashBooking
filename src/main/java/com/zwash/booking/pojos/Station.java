@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -64,10 +63,10 @@ public class Station {
 	@UpdateTimestamp
 	@Column(name = "updatedAt")
 	private LocalDateTime updatedAt;
-	
+
 	public Station() {
 	}
-	
+
 	public Station(String name, String address, double latitude, double longitude, ServiceProvider serviceProvider,
 			Media media) {
 
@@ -82,7 +81,7 @@ public class Station {
 
 
 	public Station(String name, String address, double latitude, double longitude, ServiceProvider serviceProvider) {
-		
+
 		this.name = name;
 		this.address = address;
 		this.latitude = latitude;

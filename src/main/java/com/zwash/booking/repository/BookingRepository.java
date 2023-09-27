@@ -8,9 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.zwash.auth.pojos.User;
 import com.zwash.booking.pojos.Booking;
+import com.zwash.common.pojos.User;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {

@@ -21,10 +21,10 @@ import jakarta.persistence.Transient;
 public class Media {
 
 	public Media() {
-		
+
 	}
 	public Media(MultipartFile logoFile,MultipartFile pictureFile) {
-		
+
 		this.pictureFile=pictureFile;
 		this.logoFile=logoFile;
 		this.logo=logoFile.getName();

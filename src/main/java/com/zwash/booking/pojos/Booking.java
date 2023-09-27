@@ -6,9 +6,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.zwash.auth.pojos.Car;
-import com.zwash.auth.pojos.User;
-
+import com.zwash.common.pojos.Car;
+import com.zwash.common.pojos.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -45,7 +44,7 @@ public class Booking {
 			@JsonSubTypes.Type(value = TouchlessCarWashingProgram.class, name = "touch_less") })
 	private CarWashingProgram washingProgram;
 
-	//i dont need the sceduled time 
+	//i dont need the sceduled time
 	@ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "user_id", nullable = false)
 	@OnDelete(action = OnDeleteAction.CASCADE)
@@ -77,7 +76,7 @@ public class Booking {
 		this.user=user;
 		this.station=station;
 
-	}   
+	}
 
 	public Long getId() {
 		return id;
