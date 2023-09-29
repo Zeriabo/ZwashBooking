@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +36,8 @@ import com.zwash.booking.service.CarWashingProgramService;
 import com.zwash.booking.service.StationService;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.User;
+import com.zwash.config.KafkaTopicConfig;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -48,22 +51,10 @@ import jakarta.transaction.Transactional;
 public class BookingController {
 
 	@Autowired
-	private UserService userService;
+    private KafkaTemplate<String, String> kafkaTemplate;
 
-	@Autowired
-	private CarService carService;
 
-	@Autowired
-	private StationService stationService;
 
-	@Autowired
-	private CarWashingProgramService  washingProgramService;
-
-	@Autowired
-	private BookingService bookingService;
-
-	@Autowired
-	private CarWashService carWashService;
 
 	Logger logger = LoggerFactory.getLogger(BookingController.class);
 
@@ -72,7 +63,7 @@ public class BookingController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieved booking"),
 			@ApiResponse(code = 404, message = "Booking not found") })
 	public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
-		Booking booking = bookingService.getBookingById(id);
+		Booking booking =null;// bookingService.getBookingById(id);
 		if (booking != null) {
 			return new ResponseEntity<>(booking, HttpStatus.OK);
 		} else {
@@ -86,7 +77,7 @@ public class BookingController {
 			@ApiResponse(code = 404, message = "Bookings not found") })
 	public ResponseEntity<List<BookingDTO>> getAllBookings() throws Exception {
 		try {
-			List<BookingDTO> list = bookingService.getAllBookings();
+			List<BookingDTO> list =null;//  bookingService.getAllBookings();
 			return new ResponseEntity<>(list, HttpStatus.OK);
 		} catch (Exception ex) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -99,12 +90,12 @@ public class BookingController {
 			@ApiResponse(code = 404, message = "Bookings not found") })
 	public ResponseEntity<List<BookingDTO>> getUsersBookings(@PathVariable("id") Long userId) throws Exception {
 		try {
-			User user = userService.getUser(userId);
-			List<BookingDTO> list = bookingService.getBookingsByUser(user);
+			 kafkaTemplate.send(KafkaTopicConfig.getUserTopic().name(), userId.toString());
+
+			User user = null;// userService.getUser(userId);
+			List<BookingDTO> list = null;// bookingService.getBookingsByUser(user);
 			return new ResponseEntity<>(list, HttpStatus.OK);
 
-		} catch (UserIsNotFoundException ex) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		} catch (Exception ex) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -127,7 +118,7 @@ public class BookingController {
 		{
 			booking.setToken(bookingDto.getToken());
 		}
-		User user = userService.getUserFromToken(bookingDto.getToken());
+		User user = null;// userService.getUserFromToken(bookingDto.getToken());
 
 		booking.setUser(user);
 
@@ -135,13 +126,13 @@ public class BookingController {
 			throw new IllegalArgumentException("Station object cannot be null");
 		}
 
-		Station station= stationService.getStation(bookingDto.getStationId());
+		Station station=null;//  stationService.getStation(bookingDto.getStationId());
 		booking.setStation(station);
 
 		if (bookingDto.getCarId() == null) {
 			throw new IllegalArgumentException("Car object cannot be null");
 		}
-		Car car = carService.getCar(bookingDto.getCarId());
+		Car car = null;// carService.getCar(bookingDto.getCarId());
 
 		if (car == null) {
 			logger.error("The car " + booking.getCar().getRegisterationPlate() + "  is not registered in the system!");
@@ -155,11 +146,11 @@ public class BookingController {
 		if (bookingDto.getWashingProgramId() == null) {
 			throw new IllegalArgumentException("Washing program object cannot be null");
 		}
-		CarWashingProgram washingProgram = washingProgramService.getProgramById(bookingDto.getWashingProgramId());
+		CarWashingProgram washingProgram = null;// washingProgramService.getProgramById(bookingDto.getWashingProgramId());
 
        booking.setWashingProgram(washingProgram);
 
-    	Booking newBooking = bookingService.saveBooking(booking);
+    	Booking newBooking = null;// bookingService.saveBooking(booking);
 		if (newBooking instanceof Booking) {
 			// Construct the message
 //			Message message = Message.builder()
@@ -205,11 +196,11 @@ public class BookingController {
 		}
 
 
-		Booking booking = bookingService.getBookingById(id);
+		Booking booking =null;//  bookingService.getBookingById(id);
 		if (booking != null) {
 			booking.setCar(newBooking.getCar());
 			booking.setWashingProgram(newBooking.getWashingProgram());
-			bookingService.saveBooking(booking);
+		// bookingService.saveBooking(booking);
 			logger.info(
 					"the  booking for " + booking.getCar().getRegisterationPlate() + " has been updated successfully");
 			// Construct the message
@@ -241,9 +232,9 @@ public class BookingController {
 	@ApiResponses(value = { @ApiResponse(code = 204, message = "Wash executed successfully"),
 			@ApiResponse(code = 404, message = "Booking with provided id not found") })
 	public ResponseEntity<Void> executeBookingWash(@PathVariable Long id) {
-		Booking booking = bookingService.getBookingById(id);
+		Booking booking = null;// bookingService.getBookingById(id);
 		if (booking != null) {
-			carWashService.executeCarWash(booking);
+			//carWashService.executeCarWash(booking);
 
 			logger.info(
 					"the  booking for " + booking.getCar().getRegisterationPlate() + " has been executed successfully");
@@ -263,12 +254,12 @@ public class BookingController {
 	@ApiResponses(value = { @ApiResponse(code = 204, message = "Booking deleted successfully"),
 			@ApiResponse(code = 404, message = "Booking with provided id not found") })
 	public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
-		Booking booking = bookingService.getBookingById(id);
+		Booking booking = null;// bookingService.getBookingById(id);
 		if (booking != null) {
 			logger.info(
 					"the  booking for " + booking.getCar().getRegisterationPlate() + " has been deleted successfully");
 
-			bookingService.deleteBooking(booking);
+			//bookingService.deleteBooking(booking);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} else {
 			logger.error("Booking with car " + booking.getCar().getRegisterationPlate() + " not deleted!");
@@ -282,16 +273,17 @@ public class BookingController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Request processed successfully"),
 			@ApiResponse(code = 404, message = "Car with provided registration plate not found") })
 	public ResponseEntity<Boolean> isBookingExistsForCar(@PathVariable String registrationPlate) throws CarDoesNotExistException {
-		Car car = carService.getCar(registrationPlate);
+		Car car =null;//  carService.getCar(registrationPlate);
 		if (car == null) {
 			// Car not found
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
 		}
-		if (bookingService.isBookingExistsForCar(registrationPlate)) {
-			logger.info("the  booking for " + registrationPlate + " has been deleted successfully");
-
-			return ResponseEntity.ok(bookingService.isBookingExistsForCar(registrationPlate));
-		} else {
+//		if (bookingService.isBookingExistsForCar(registrationPlate)) {
+//			logger.info("the  booking for " + registrationPlate + " has been deleted successfully");
+//
+//			return ResponseEntity.ok(bookingService.isBookingExistsForCar(registrationPlate));
+//		} 
+		else {
 			logger.error("the  booking for " + registrationPlate + " has not been deleted successfully");
 
 			return ResponseEntity.status(400).body(false);
