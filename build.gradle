@@ -20,8 +20,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux:2.4.5'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.0'
     implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
-  	//implementation project(':ZwashCommon')
-    //implementation project(':ZwashAuthentication')
+  	implementation project(':ZwashCommon')
+    implementation project(':ZwashAuthentication')
   	//kafka 
      implementation 'org.springframework.kafka:spring-kafka:3.0.11'
      
@@ -55,3 +55,5 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
+	

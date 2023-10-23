@@ -1,12 +1,14 @@
 package com.zwash.booking.controller;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +27,7 @@ import com.zwash.auth.exceptions.CarDoesNotExistException;
 import com.zwash.auth.exceptions.UserIsNotFoundException;
 import com.zwash.auth.service.CarService;
 import com.zwash.auth.service.UserService;
+import com.zwash.booking.config.KafkaTopicConfig;
 import com.zwash.booking.dto.BookingDTO;
 import com.zwash.booking.exceptions.StationNotExistsException;
 import com.zwash.booking.pojos.Booking;
@@ -36,7 +39,6 @@ import com.zwash.booking.service.CarWashingProgramService;
 import com.zwash.booking.service.StationService;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.User;
-import com.zwash.config.KafkaTopicConfig;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,7 +54,8 @@ public class BookingController {
 
 	@Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
-
+	@Autowired
+	private BookingService bookingService;
 
 
 
@@ -88,19 +91,52 @@ public class BookingController {
 	@ApiOperation(value = "Get bookings belong to a User", response = BookingDTO.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieved bookings"),
 			@ApiResponse(code = 404, message = "Bookings not found") })
-	public ResponseEntity<List<BookingDTO>> getUsersBookings(@PathVariable("id") Long userId) throws Exception {
+	public ResponseEntity<List<BookingDTO>> getUsersBookings(@PathVariable("id") Long userId,
+            @RequestBody(required = false) String reqJson) throws Exception {
 		try {
 			 kafkaTemplate.send(KafkaTopicConfig.getUserTopic().name(), userId.toString());
-
-			User user = null;// userService.getUser(userId);
-			List<BookingDTO> list = null;// bookingService.getBookingsByUser(user);
-			return new ResponseEntity<>(list, HttpStatus.OK);
-
+			 
+			 CompletableFuture<User> userFuture = new CompletableFuture<>();
+			   // Set up a callback to handle the asynchronous user retrieval
+			    userFuture.thenApplyAsync(user -> {
+			        try {
+			            // If the user is null, handle the scenario (throw exception, return appropriate response, etc.)
+			            if (user == null) {
+			                throw new UserIsNotFoundException("User not found for id: " + userId);
+			            }
+			            // If the user is found, get bookings and return the response
+			            List<BookingDTO> list = bookingService.getBookingsByUser(user);
+			            return new ResponseEntity<>(list, HttpStatus.OK);
+			        } catch (UserIsNotFoundException ex) {
+			            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			        } catch (Exception ex) {
+			            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			        }
+			    });
+		
 		} catch (Exception ex) {
+			
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		 return new ResponseEntity<>(null, HttpStatus.OK);
 	}
 
+
+
+	
+	private User getUserFromKafkaMessage(String reqJson) throws UserIsNotFoundException {
+	    // Parse reqJson and extract user information
+	    // Implement your logic to retrieve the user from the message payload
+	    // If user is not found, throw UserIsNotFoundException
+	    // If user is found, return the user object
+		System.out.println(reqJson);
+		return null;
+	}
+	
+	
+	
+	
+	
 	@PostMapping
 	@Transactional
 	@ApiOperation(value = "Create a booking", response = Booking.class)

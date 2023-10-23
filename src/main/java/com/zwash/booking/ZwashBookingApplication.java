@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(basePackages = {"com.zwash.auth.service","com.zwash.booking.service","com.zwash.booking.controller","com.zwash.booking.config"})
-@EntityScan(basePackages = {"com.zwash.common.pojos","com.zwash.booking.pojos"})
+
+@ComponentScan(basePackages = {"com.zwash.common"})
 @SpringBootApplication
 public class ZwashBookingApplication {
 
