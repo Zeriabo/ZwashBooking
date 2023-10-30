@@ -34,8 +34,7 @@ public class BookingServiceImpl implements BookingService {
 	@Autowired
 	private final WashService washService;
 	
-	  @Autowired
-	public BookingServiceImpl(BookingRepository bookingRepository, CarRepository carRepository,WashService washService) {
+	  public BookingServiceImpl(BookingRepository bookingRepository, CarRepository carRepository,WashService washService) {
 		this.bookingRepository = bookingRepository;
 		this.carRepository = carRepository;
 		this.washService = washService;
@@ -62,8 +61,8 @@ public class BookingServiceImpl implements BookingService {
 	        		.map(BookingMapper.INSTANCE::toBookingDto)//toBookingDtoList
 	                .collect(Collectors.toList());
 	    } catch (Exception ex) {
-	        if (ex instanceof InvocationTargetException) {
-	            Throwable targetException = ((InvocationTargetException) ex).getCause();
+	        if (ex instanceof InvocationTargetException exception) {
+	            Throwable targetException = exception.getCause();
 	            System.out.println(targetException);
 	        }
 	        throw new Exception("Error occurred while getting all bookings", ex);
@@ -85,8 +84,8 @@ public class BookingServiceImpl implements BookingService {
 	        		.map(BookingMapper.INSTANCE::toBookingDto)//toBookingDtoList
 	                .collect(Collectors.toList());
 	    } catch (Exception ex) {
-	        if (ex instanceof InvocationTargetException) {
-	            Throwable targetException = ((InvocationTargetException) ex).getCause();
+	        if (ex instanceof InvocationTargetException exception) {
+	            Throwable targetException = exception.getCause();
 	            System.out.println(targetException);
 	        }
 	        throw new Exception("Error occurred while getting all bookings", ex);
@@ -145,8 +144,8 @@ public class BookingServiceImpl implements BookingService {
 	         List<Booking> bookings =bookingRepository.findByUserId(userId);
 	        return bookings;
 	    } catch (Exception ex) {
-	        if (ex instanceof InvocationTargetException) {
-	            Throwable targetException = ((InvocationTargetException) ex).getCause();
+	        if (ex instanceof InvocationTargetException exception) {
+	            Throwable targetException = exception.getCause();
 	            System.out.println(targetException);
 	        }
 	        throw new Exception("Error occurred while getting all bookings", ex);
