@@ -24,9 +24,11 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 	@Query("SELECT s FROM Station  s WHERE s.serviceProvider.id = :id")
 	List<Station> findByServiceProvider(@Param("id") Long id);
 
-	@Query("SELECT cw "
-			+ "FROM CarWashingProgram cw "
-			+ "WHERE cw.station.id =:id")
+	@Query("""
+            SELECT cw \
+            FROM CarWashingProgram cw \
+            WHERE cw.station.id =:id\
+            """)
 	List<CarWashingProgram> getWashes(@Param("id") Long id);
 
 	@Modifying
