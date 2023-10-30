@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -305,25 +307,15 @@ public class BookingController {
 	}
 
 	@GetMapping("validate/{registrationPlate}")
+	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Check if a booking exists for a given car registration plate", response = Boolean.class)
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Request processed successfully"),
 			@ApiResponse(code = 404, message = "Car with provided registration plate not found") })
 	public ResponseEntity<Boolean> isBookingExistsForCar(@PathVariable String registrationPlate) throws CarDoesNotExistException {
-		Car car =null;//  carService.getCar(registrationPlate);
-		if (car == null) {
-			// Car not found
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-		}
-//		if (bookingService.isBookingExistsForCar(registrationPlate)) {
-//			logger.info("the  booking for " + registrationPlate + " has been deleted successfully");
-//
-//			return ResponseEntity.ok(bookingService.isBookingExistsForCar(registrationPlate));
-//		} 
-		else {
-			logger.error("the  booking for " + registrationPlate + " has not been deleted successfully");
-
-			return ResponseEntity.status(400).body(false);
-		}
+		Car car =null;
+		//carService.getCar(registrationPlate);
+		// Car not found
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
 
 	}
 
