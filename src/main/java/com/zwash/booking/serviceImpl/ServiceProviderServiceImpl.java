@@ -2,7 +2,6 @@ package com.zwash.booking.serviceImpl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.zwash.booking.exceptions.ServiceProviderNotExistsException;
@@ -21,7 +20,6 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
 
 	 private final StationRepository stationRepository;
 
-	    @Autowired
 	    public ServiceProviderServiceImpl(ServiceProviderRepository serviceProviderRepository, StationRepository stationRepository) {
 	        this.serviceProviderRepository = serviceProviderRepository;
 	        this.stationRepository = stationRepository;
