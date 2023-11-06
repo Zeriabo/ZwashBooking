@@ -41,6 +41,7 @@ dependencies {
     implementation group: 'org.jasypt', name: 'jasypt', version: '1.9.3'
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.0.0'
     implementation 'com.google.firebase:firebase-admin:8.0.0'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-eureka-client', version: '2.2.3.RELEASE'
     implementation group: 'io.github.cdimascio', name: 'java-dotenv', version: '5.2.2'
 	implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.5.Final'
 	implementation group: 'org.postgresql', name: 'postgresql', version: '42.6.0'
