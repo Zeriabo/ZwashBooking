@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,15 +19,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.zwash.auth.exceptions.CarDoesNotExistException;
 import com.zwash.auth.exceptions.UserIsNotFoundException;
-import com.zwash.auth.service.CarService;
-import com.zwash.auth.service.UserService;
 import com.zwash.booking.config.KafkaTopicConfig;
 import com.zwash.booking.dto.BookingDTO;
 import com.zwash.booking.exceptions.StationNotExistsException;
@@ -36,12 +32,8 @@ import com.zwash.booking.pojos.Booking;
 import com.zwash.booking.pojos.CarWashingProgram;
 import com.zwash.booking.pojos.Station;
 import com.zwash.booking.service.BookingService;
-import com.zwash.booking.service.CarWashService;
-import com.zwash.booking.service.CarWashingProgramService;
-import com.zwash.booking.service.StationService;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.User;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -312,7 +304,7 @@ public class BookingController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Request processed successfully"),
 			@ApiResponse(code = 404, message = "Car with provided registration plate not found") })
 	public ResponseEntity<Boolean> isBookingExistsForCar(@PathVariable String registrationPlate) throws CarDoesNotExistException {
-		Car car =null;
+		//Car car =null;
 		//carService.getCar(registrationPlate);
 		// Car not found
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
