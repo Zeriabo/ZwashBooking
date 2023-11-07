@@ -2,13 +2,12 @@ package com.zwash.booking;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@ComponentScan(basePackages = {"com.zwash.common","com.zwash.booking.service"})
-@EnableJpaRepositories("com.zwash.booking.repository")
 @SpringBootApplication
+@EnableEurekaClient
 public class ZwashBookingApplication {
 
 	public static void main(String[] args) {
@@ -16,3 +15,4 @@ public class ZwashBookingApplication {
 	}
 
 }
+	
