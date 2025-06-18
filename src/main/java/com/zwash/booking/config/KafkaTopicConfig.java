@@ -9,7 +9,8 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
 
     @Bean
-    public static NewTopic getUserTopic(){
+	public
+    static NewTopic getUserTopic(){
         return TopicBuilder.name("get-user").build();
     }
 }

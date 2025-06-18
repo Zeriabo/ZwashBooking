@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.zwash.common.pojos.ServiceProvider;
+import com.zwash.common.pojos.Station;
 import com.zwash.booking.exceptions.ServiceProviderNotExistsException;
 import com.zwash.booking.exceptions.StationNotExistsException;
-import com.zwash.booking.pojos.ServiceProvider;
-import com.zwash.booking.pojos.Station;
 import com.zwash.booking.repository.ServiceProviderRepository;
 import com.zwash.booking.repository.StationRepository;
 import com.zwash.booking.service.ServiceProviderService;

@@ -3,12 +3,12 @@ package com.zwash.booking.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.zwash.booking.pojos.Booking;
-import com.zwash.booking.pojos.Wash;
-import com.zwash.booking.pojos.WashStatus;
-import com.zwash.booking.repository.BookingRepository;
 import com.zwash.booking.service.CarWashService;
 import com.zwash.booking.service.WashService;
+import com.zwash.common.enums.WashStatus;
+import com.zwash.common.pojos.Booking;
+import com.zwash.common.pojos.Wash;
+import com.zwash.common.repository.BookingRepository;
 
 import jakarta.transaction.Transactional;
 

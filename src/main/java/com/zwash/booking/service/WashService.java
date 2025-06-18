@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
-import com.zwash.booking.pojos.Wash;
+import com.zwash.common.pojos.Wash;
 
 
 

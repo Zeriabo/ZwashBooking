@@ -2,7 +2,9 @@ package com.zwash.booking.service;
 
 import java.util.List;
 
-import com.zwash.booking.pojos.CarWashingProgram;
+import com.zwash.common.pojos.CarWashingProgram;
+
+
 
 public interface CarWashingProgramService {
 

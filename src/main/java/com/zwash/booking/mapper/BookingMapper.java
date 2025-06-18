@@ -8,10 +8,11 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import com.zwash.auth.exceptions.UserIsNotFoundException;
-import com.zwash.booking.dto.BookingDTO;
+import com.zwash.common.dto.BookingDTO;
 import com.zwash.booking.factory.CarWashingProgramFactory;
-import com.zwash.booking.pojos.Booking;
-import com.zwash.booking.pojos.CarWashingProgram;
+import com.zwash.car.exceptions.CarDoesNotExistException;
+import com.zwash.common.pojos.Booking;
+import com.zwash.common.pojos.CarWashingProgram;
 
 
 
@@ -33,7 +34,7 @@ public interface BookingMapper {
     @Mapping(source = "scheduledTime", target = "scheduledTime")
     @Mapping(source = "token", target = "token")
     @Mapping(source = "executed", target = "executed")
-    Booking toBooking(BookingDTO bookingDTO) throws UserIsNotFoundException;
+    Booking toBooking(BookingDTO bookingDTO) throws UserIsNotFoundException, CarDoesNotExistException;
 
     @Named("createCarWashingProgram")
     default CarWashingProgram createCarWashingProgram(String washingProgramId) {
@@ -47,7 +48,7 @@ public interface BookingMapper {
         return bookingDtos.stream().map(t -> {
 			try {
 				return toBooking(t);
-			} catch (UserIsNotFoundException e) {
+			} catch (UserIsNotFoundException | CarDoesNotExistException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

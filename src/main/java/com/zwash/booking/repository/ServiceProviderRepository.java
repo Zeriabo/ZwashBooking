@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.zwash.booking.pojos.ServiceProvider;
+import com.zwash.common.pojos.ServiceProvider;
 
 
 @Repository

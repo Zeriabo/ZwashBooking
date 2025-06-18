@@ -2,7 +2,7 @@ package com.zwash.booking.service;
 
 import org.springframework.stereotype.Service;
 
-import com.zwash.booking.pojos.Booking;
+import com.zwash.common.pojos.Booking;
 
 
 

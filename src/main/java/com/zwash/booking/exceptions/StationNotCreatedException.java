@@ -1,10 +1,13 @@
 package com.zwash.booking.exceptions;
 
+import java.io.Serial;
+
 public class StationNotCreatedException extends Exception {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -3267837584889499032L;
+    /**
+     *
+     */
+    @Serial
+    private static final long serialVersionUID = -3267837584889499032L;
     public StationNotCreatedException()
     {
 

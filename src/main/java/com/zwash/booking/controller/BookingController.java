@@ -26,24 +26,24 @@ import com.google.firebase.messaging.Notification;
 import com.zwash.auth.exceptions.CarDoesNotExistException;
 import com.zwash.auth.exceptions.UserIsNotFoundException;
 import com.zwash.booking.config.KafkaTopicConfig;
-import com.zwash.booking.dto.BookingDTO;
+import com.zwash.common.dto.BookingDTO;
 import com.zwash.booking.exceptions.StationNotExistsException;
-import com.zwash.booking.pojos.Booking;
-import com.zwash.booking.pojos.CarWashingProgram;
-import com.zwash.booking.pojos.Station;
+import com.zwash.common.pojos.Station;
 import com.zwash.booking.service.BookingService;
+import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
+import com.zwash.common.pojos.CarWashingProgram;
 import com.zwash.common.pojos.User;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 
 
 @Controller
 @RequestMapping("v1/bookings")
-@Api(tags = "Booking API")
+@Tag(name = "Booking API")
 public class BookingController {
 
 	@Autowired
@@ -56,9 +56,9 @@ public class BookingController {
 	Logger logger = LoggerFactory.getLogger(BookingController.class);
 
 	@GetMapping(value = "/{id}")
-	@ApiOperation(value = "Get a booking by ID", response = Booking.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieved booking"),
-			@ApiResponse(code = 404, message = "Booking not found") })
+	@Operation(summary = "Get a booking by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successfully retrieved booking"),
+			@ApiResponse(responseCode = "404", description = "Booking not found") })
 	public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
 		Booking booking =null;// bookingService.getBookingById(id);
 		if (booking != null) {
@@ -69,9 +69,9 @@ public class BookingController {
 	}
 
 	@GetMapping
-	@ApiOperation(value = "Get all bookings", response = BookingDTO.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieved bookings"),
-			@ApiResponse(code = 404, message = "Bookings not found") })
+	@Operation(summary = "Get all bookings")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings"),
+			@ApiResponse(responseCode = "404", description = "Bookings not found") })
 	public ResponseEntity<List<BookingDTO>> getAllBookings() throws Exception {
 		try {
 			List<BookingDTO> list =null;//  bookingService.getAllBookings();
@@ -82,9 +82,9 @@ public class BookingController {
 	}
 
 	@GetMapping("/user/{id}")
-	@ApiOperation(value = "Get bookings belong to a User", response = BookingDTO.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully retrieved bookings"),
-			@ApiResponse(code = 404, message = "Bookings not found") })
+	@Operation(summary = "Get bookings belong to a User")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings"),
+			@ApiResponse(responseCode = "404", description = "Bookings not found") })
 	public ResponseEntity<List<BookingDTO>> getUsersBookings(@PathVariable("id") Long userId,
             @RequestBody(required = false) String reqJson) throws Exception {
 		try {
@@ -133,9 +133,9 @@ public class BookingController {
 	
 	@PostMapping
 	@Transactional
-	@ApiOperation(value = "Create a booking", response = Booking.class)
-	@ApiResponses(value = { @ApiResponse(code = 201, message = "Successfully created booking"),
-			@ApiResponse(code = 400, message = "Invalid request") })
+	@Operation(summary = "Create a booking")
+	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created booking"),
+			@ApiResponse(responseCode = "400", description = "Invalid request") })
 	public ResponseEntity<Booking> createBooking(@RequestBody BookingDTO bookingDto) throws  CarDoesNotExistException, StationNotExistsException, UserIsNotFoundException {
 
 		Booking booking = new Booking();
@@ -207,10 +207,10 @@ public class BookingController {
 
 	@PutMapping("/{id}")
 	@Transactional
-	@ApiOperation(value = "Update an existing booking", response = Booking.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Booking updated successfully"),
-			@ApiResponse(code = 400, message = "Invalid request. Check input parameters"),
-			@ApiResponse(code = 404, message = "Booking with provided id not found") })
+	@Operation(summary = "Update an existing booking")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Booking updated successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request. Check input parameters"),
+			@ApiResponse(responseCode = "404", description = "Booking with provided id not found") })
 	public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking newBooking) {
 		if (newBooking == null) {
 			throw new IllegalArgumentException("Booking object cannot be null");
@@ -258,9 +258,9 @@ public class BookingController {
 	@SuppressWarnings("null")
 	@PostMapping("/{id}")
 	@Transactional
-	@ApiOperation(value = "Execute a Wash")
-	@ApiResponses(value = { @ApiResponse(code = 204, message = "Wash executed successfully"),
-			@ApiResponse(code = 404, message = "Booking with provided id not found") })
+	@Operation(summary = "Execute a Wash")
+	@ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Wash executed successfully"),
+			@ApiResponse(responseCode = "404", description = "Booking with provided id not found") })
 	public ResponseEntity<Void> executeBookingWash(@PathVariable Long id) {
 		Booking booking = null;// bookingService.getBookingById(id);
 		if (booking != null) {
@@ -280,9 +280,9 @@ public class BookingController {
 	@SuppressWarnings("null")
 	@DeleteMapping("/{id}")
 	@Transactional
-	@ApiOperation(value = "Delete a booking by id")
-	@ApiResponses(value = { @ApiResponse(code = 204, message = "Booking deleted successfully"),
-			@ApiResponse(code = 404, message = "Booking with provided id not found") })
+	@Operation(summary = "Delete a booking by id")
+	@ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Booking deleted successfully"),
+			@ApiResponse(responseCode = "404", description = "Booking with provided id not found") })
 	public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
 		Booking booking = null;// bookingService.getBookingById(id);
 		if (booking != null) {
@@ -300,9 +300,9 @@ public class BookingController {
 
 	@GetMapping("validate/{registrationPlate}")
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Check if a booking exists for a given car registration plate", response = Boolean.class)
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Request processed successfully"),
-			@ApiResponse(code = 404, message = "Car with provided registration plate not found") })
+	@Operation(summary = "Check if a booking exists for a given car registration plate")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Request processed successfully"),
+			@ApiResponse(responseCode = "404", description = "Car with provided registration plate not found") })
 	public ResponseEntity<Boolean> isBookingExistsForCar(@PathVariable String registrationPlate) throws CarDoesNotExistException {
 		//Car car =null;
 		//carService.getCar(registrationPlate);

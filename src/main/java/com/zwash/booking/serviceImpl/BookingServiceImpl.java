@@ -9,14 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import com.zwash.booking.dto.BookingDTO;
+import com.zwash.common.dto.BookingDTO;
 import com.zwash.booking.mapper.BookingMapper;
-import com.zwash.booking.pojos.Booking;
-import com.zwash.booking.repository.BookingRepository;
 import com.zwash.booking.service.BookingService;
 import com.zwash.booking.service.WashService;
+import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.User;
+import com.zwash.common.repository.BookingRepository;
 import com.zwash.common.repository.CarRepository;
 
 import jakarta.persistence.EntityNotFoundException;

@@ -8,11 +8,13 @@ import org.springframework.stereotype.Service;
 
 import com.zwash.booking.exceptions.ProgramAlreadyExistsException;
 import com.zwash.booking.exceptions.StationNotExistsException;
-import com.zwash.booking.pojos.CarWashingProgram;
-import com.zwash.booking.pojos.Station;
+
+import com.zwash.common.pojos.Station;
 import com.zwash.booking.repository.CarWashingProgramRepository;
 import com.zwash.booking.service.CarWashingProgramService;
 import com.zwash.booking.service.StationService;
+import com.zwash.common.pojos.CarWashingProgram;
+
 
 
 

@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.zwash.booking.dto.StationDTO;
 import com.zwash.booking.exceptions.StationNotExistsException;
-import com.zwash.booking.pojos.CarWashingProgram;
-import com.zwash.booking.pojos.Media;
-import com.zwash.booking.pojos.Station;
+import com.zwash.common.dto.StationDTO;
+import com.zwash.common.pojos.Media;
+import com.zwash.common.pojos.Station;
+import com.zwash.common.pojos.CarWashingProgram;
 
 
 

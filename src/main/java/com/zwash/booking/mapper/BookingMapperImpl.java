@@ -8,13 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.zwash.auth.exceptions.UserIsNotFoundException;
-import com.zwash.auth.service.CarService;
+import com.zwash.car.exceptions.CarDoesNotExistException;
+import com.zwash.car.service.CarService;
 import com.zwash.auth.service.UserService;
-import com.zwash.booking.dto.BookingDTO;
-import com.zwash.booking.pojos.Booking;
-import com.zwash.booking.pojos.CarWashingProgram;
+import com.zwash.common.dto.BookingDTO;
 import com.zwash.booking.service.CarWashingProgramService;
+import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
+import com.zwash.common.pojos.CarWashingProgram;
 
 
 
@@ -44,7 +45,7 @@ public class BookingMapperImpl implements BookingMapper {
     }
 
     @Override
-    public Booking toBooking(BookingDTO bookingDTO) throws UserIsNotFoundException {
+    public Booking toBooking(BookingDTO bookingDTO) throws UserIsNotFoundException, CarDoesNotExistException {
         if (bookingDTO == null) {
             return null;
         }
@@ -68,7 +69,7 @@ public class BookingMapperImpl implements BookingMapper {
         return bookingDtos.stream().map(t -> {
 			try {
 				return toBooking(t);
-			} catch (UserIsNotFoundException e) {
+			} catch (UserIsNotFoundException | CarDoesNotExistException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

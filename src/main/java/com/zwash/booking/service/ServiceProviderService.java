@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.zwash.booking.exceptions.ServiceProviderNotExistsException;
 import com.zwash.booking.exceptions.StationNotExistsException;
-import com.zwash.booking.pojos.ServiceProvider;
-import com.zwash.booking.pojos.Station;
+import com.zwash.common.pojos.ServiceProvider;
+import com.zwash.common.pojos.Station;
 
 @Service
 public interface ServiceProviderService {
