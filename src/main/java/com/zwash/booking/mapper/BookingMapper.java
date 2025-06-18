@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
-import com.zwash.auth.exceptions.UserIsNotFoundException;
+import com.zwash.common.exceptions.UserIsNotFoundException;
 import com.zwash.common.dto.BookingDTO;
 import com.zwash.booking.factory.CarWashingProgramFactory;
 import com.zwash.car.exceptions.CarDoesNotExistException;

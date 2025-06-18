@@ -9,6 +9,7 @@
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/exceptions/StationNotCreatedException.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/exceptions/StationNotExistsException.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/factory/CarWashingProgramFactory.java
+/Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/grpc/UserServiceGrpcClient.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/mapper/BookingMapper.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/mapper/BookingMapperImpl.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/pojos/ProductRequest.java
