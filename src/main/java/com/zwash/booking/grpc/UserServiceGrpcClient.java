@@ -1,38 +1,30 @@
 package com.zwash.booking.grpc;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.zwash.common.grpc.UserServiceGrpc;
 import com.zwash.common.grpc.UserServiceGrpc.UserServiceBlockingStub;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.stereotype.Component;
 
-@Component
+@Configuration
 public class UserServiceGrpcClient {
 
-    private UserServiceBlockingStub userStub;
-    private ManagedChannel channel;
-
-    @PostConstruct
-    public void init() {
-        this.channel = ManagedChannelBuilder
-                .forAddress("localhost", 8085) 
-                .usePlaintext() // for local, remove in production
+	@Bean(name = "userServiceChannel")
+    public ManagedChannel userServiceChannel() {
+        return ManagedChannelBuilder
+        		.forAddress("127.0.0.1", 9091)
+                .usePlaintext()
                 .build();
-
-        this.userStub = UserServiceGrpc.newBlockingStub(channel);
     }
 
-    public UserServiceBlockingStub getStub() {
-        return userStub;
-    }
+	@Bean
+	UserServiceGrpc.UserServiceBlockingStub userServiceBlockingStub(
+	        @Qualifier("userServiceChannel") ManagedChannel channel) {
+	    return UserServiceGrpc.newBlockingStub(channel);
+	}
 
-    @PreDestroy
-    public void shutdown() {
-        if (channel != null) {
-            channel.shutdown();
-        }
-    }
 }

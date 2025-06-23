@@ -4,8 +4,8 @@ package com.zwash.booking.pojos;
 public class ProductRequest {
     private String name;
     private int price;
-	private String description; 
-	
+	private String description;
+
     public String getDescription() {
  		return description;
  	}
@@ -18,12 +18,12 @@ public class ProductRequest {
  	public void setPrice(int price) {
  		this.price = price;
  	}
- 
+
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 }

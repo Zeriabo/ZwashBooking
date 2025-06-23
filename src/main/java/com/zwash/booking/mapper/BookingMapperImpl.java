@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.zwash.common.exceptions.UserIsNotFoundException;
+import com.zwash.booking.service.CarWashingProgramService;
 import com.zwash.car.exceptions.CarDoesNotExistException;
 import com.zwash.car.service.CarService;
 import com.zwash.common.dto.BookingDTO;
-import com.zwash.booking.service.CarWashingProgramService;
+import com.zwash.common.exceptions.UserIsNotFoundException;
 import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.CarWashingProgram;
@@ -66,7 +66,7 @@ public class BookingMapperImpl implements BookingMapper {
 			try {
 				return toBooking(t);
 			} catch (UserIsNotFoundException | CarDoesNotExistException e) {
-			
+
 				e.printStackTrace();
 			}
 			return null;

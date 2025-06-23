@@ -1,5 +1,7 @@
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/ZwashBookingApplication.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/config/AppConfig.java
+/Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/config/CarServiceGrpcClientConfig.java
+/Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/config/GrpcClientConfig.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/config/KafkaTopicConfig.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/controller/BookingController.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/exceptions/CarExistsException.java
@@ -9,6 +11,7 @@
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/exceptions/StationNotCreatedException.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/exceptions/StationNotExistsException.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/factory/CarWashingProgramFactory.java
+/Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/grpc/StationServiceGrpcClient.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/grpc/UserServiceGrpcClient.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/mapper/BookingMapper.java
 /Users/zeriab/git/zwash-k8s/services/ZwashBooking/src/main/java/com/zwash/booking/mapper/BookingMapperImpl.java

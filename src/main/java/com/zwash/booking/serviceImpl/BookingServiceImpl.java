@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import com.zwash.common.dto.BookingDTO;
 import com.zwash.booking.mapper.BookingMapper;
 import com.zwash.booking.service.BookingService;
 import com.zwash.booking.service.WashService;
+import com.zwash.common.dto.BookingDTO;
 import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.User;
@@ -30,10 +30,10 @@ public class BookingServiceImpl implements BookingService {
 
 	@Autowired
 	private final CarRepository carRepository;
-    
+
 	@Autowired
 	private final WashService washService;
-	
+
 	  public BookingServiceImpl(BookingRepository bookingRepository, CarRepository carRepository,WashService washService) {
 		this.bookingRepository = bookingRepository;
 		this.carRepository = carRepository;
@@ -52,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
 		return bookingRepository.findById(id).get();
 	}
 
-	
+
 	@Override
 	public List<BookingDTO> getAllBookings() throws  Exception {
 	    try {

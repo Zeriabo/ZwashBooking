@@ -1,10 +1,10 @@
 package com.zwash.booking.factory;
 
 
+import com.zwash.common.pojos.CarWashingProgram;
 import com.zwash.common.pojos.FoamCarWashingProgram;
 import com.zwash.common.pojos.HighPressureCarWashingProgram;
 import com.zwash.common.pojos.TouchlessCarWashingProgram;
-import com.zwash.common.pojos.CarWashingProgram;
 
 public abstract class CarWashingProgramFactory {
 

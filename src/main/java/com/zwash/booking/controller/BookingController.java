@@ -1,8 +1,8 @@
 package com.zwash.booking.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,43 +21,48 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.zwash.booking.config.KafkaTopicConfig;
+import com.zwash.booking.service.BookingService;
+import com.zwash.common.dto.BookingDTO;
 import com.zwash.common.exceptions.CarDoesNotExistException;
 import com.zwash.common.exceptions.UserIsNotFoundException;
-import com.zwash.common.grpc.CarServiceGrpc;
-import com.zwash.common.grpc.CarWashingProgramRequest;
-import com.zwash.common.grpc.CarWashingProgramResponse;
 import com.zwash.common.grpc.CarRequest;
 import com.zwash.common.grpc.CarResponse;
+import com.zwash.common.grpc.CarServiceGrpc;
+import com.zwash.common.grpc.CarWashingProgramResponse;
 import com.zwash.common.grpc.CarWashingProgramServiceGrpc;
-import com.zwash.common.grpc.ServiceProviderServiceGrpc;
+import com.zwash.common.grpc.GetWashingProgramRequest;
+import com.zwash.common.grpc.ServiceProviderResponse;
 import com.zwash.common.grpc.StationRequest;
 import com.zwash.common.grpc.StationResponse;
 import com.zwash.common.grpc.StationServiceGrpc;
 import com.zwash.common.grpc.TokenRequest;
 import com.zwash.common.grpc.UserResponse;
 import com.zwash.common.grpc.UserServiceGrpc;
-import com.zwash.common.dto.BookingDTO;
-import com.zwash.common.pojos.Station;
-import com.zwash.common.pojos.TouchlessCarWashingProgram;
-import com.zwash.booking.config.KafkaTopicConfig;
-import com.zwash.booking.service.BookingService;
 import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
 import com.zwash.common.pojos.CarWashingProgram;
 import com.zwash.common.pojos.FoamCarWashingProgram;
 import com.zwash.common.pojos.HighPressureCarWashingProgram;
+import com.zwash.common.pojos.ServiceProvider;
+import com.zwash.common.pojos.Station;
+import com.zwash.common.pojos.TouchlessCarWashingProgram;
 import com.zwash.common.pojos.User;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 
-@Controller
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
 @RequestMapping("v1/bookings")
 @Tag(name = "Booking API")
 public class BookingController {
@@ -72,9 +78,6 @@ public class BookingController {
 	private StationServiceGrpc.StationServiceBlockingStub stationStub;
 	@Autowired
 	private CarServiceGrpc.CarServiceBlockingStub carServiceStub;
-	@Autowired
-	private ServiceProviderServiceGrpc.ServiceProviderServiceBlockingStub serviceProviderStub;
-
 	@Autowired
 	private CarWashingProgramServiceGrpc.CarWashingProgramServiceBlockingStub carWashingProgramStub;
 
@@ -102,6 +105,7 @@ public class BookingController {
 			List<BookingDTO> bookingList = bookingService.getAllBookings();
 			return new ResponseEntity<>(bookingList, HttpStatus.OK);
 		} catch (Exception ex) {
+			System.out.println(ex);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
@@ -115,30 +119,28 @@ public class BookingController {
 		try {
 			kafkaTemplate.send(KafkaTopicConfig.getUserTopic().name(), userId.toString());
 
-			CompletableFuture<User> userFuture = new CompletableFuture<>();
-			// Set up a callback to handle the asynchronous user retrieval
-			userFuture.thenApplyAsync(user -> {
-				try {
-					// If the user is null, handle the scenario (throw exception, return appropriate
-					// response, etc.)
-					if (user == null) {
-						throw new UserIsNotFoundException("User not found for id: " + userId);
-					}
-					// If the user is found, get bookings and return the response
-					List<BookingDTO> list = bookingService.getBookingsByUser(user);
-					return new ResponseEntity<>(list, HttpStatus.OK);
-				} catch (UserIsNotFoundException ex) {
-					return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-				} catch (Exception ex) {
-					return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-				}
-			});
+			UserResponse userResponse = userStub.getUserById(
+				    com.zwash.common.grpc.UserIdRequest.newBuilder().setId(userId).build()
+				);
+			User user = new User();
+			user.setId(userResponse.getId());
+			user.setFirstName(userResponse.getFirstName());
+			user.setActive(userResponse.getActive());
+			user.setAdmin(userResponse.getAdmin());
+			user.setLastName(userResponse.getLastName());
+			user.setToken(userResponse.getToken());
+         
+			List<BookingDTO> list = bookingService.getBookingsByUser(user);
+			return new ResponseEntity<>(list, HttpStatus.OK);
 
-		} catch (Exception ex) {
-
+		} catch (ExecutionException e) {
+			if (e.getCause() instanceof UserIsNotFoundException) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return new ResponseEntity<>(null, HttpStatus.OK);
 	}
 
 	private User getUserFromKafkaMessage(String reqJson) throws UserIsNotFoundException {
@@ -156,114 +158,85 @@ public class BookingController {
 	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created booking"),
 			@ApiResponse(responseCode = "400", description = "Invalid request") })
 	public ResponseEntity<Booking> createBooking(@RequestBody BookingDTO bookingDto) throws Exception {
+		if (bookingDto == null)
+			throw new IllegalArgumentException("Booking cannot be null");
 
-		Booking booking = new Booking();
-
-		if (bookingDto == null) {
-			throw new IllegalArgumentException("Booking  cannot be null");
+		TokenRequest tokenRequest = TokenRequest.newBuilder().setToken(bookingDto.getToken()).build();
+		UserResponse userResponse;
+		try {
+		    userResponse = userStub.getUserFromToken(tokenRequest);
+		} catch (Exception e) {
+		    logger.error("Failed to get user from token", e);
+		    throw e;
 		}
-
-		if (bookingDto.getToken() != null) {
-			booking.setToken(bookingDto.getToken());
-		}
-		TokenRequest request = TokenRequest.newBuilder().setToken(bookingDto.getToken()).build();
-		UserResponse userResponse = userStub.getUserFromToken(request);
-
 		User user = new User();
 		user.setId(userResponse.getId());
 		user.setUsername(userResponse.getUsername());
-		user.setActive(userResponse.getActive());
-		user.setDateOfBirth(userResponse.getDateOfBirth());
 		user.setFirstName(userResponse.getFirstName());
 		user.setLastName(userResponse.getLastName());
+		user.setDateOfBirth(userResponse.getDateOfBirth());
+		user.setActive(userResponse.getActive());
 		user.setAdmin(userResponse.getAdmin());
+		user.setToken(userResponse.getToken());
 
-		booking.setUser(user);
-
-		if (bookingDto.getStationId() == null) {
-			throw new IllegalArgumentException("Station object cannot be null");
-		}
 		StationResponse stationResponse = stationStub
 				.getStation(StationRequest.newBuilder().setId(bookingDto.getStationId()).build());
-		Station station = mapStationResponseToStation(stationResponse);
-		booking.setStation(station);
+		ServiceProviderResponse serviceProviderResponse = stationResponse.getServiceProvider();
+		ServiceProvider serviceProvider = new ServiceProvider();
+		serviceProvider.setId(serviceProviderResponse.getId());
+		serviceProvider.setName(serviceProviderResponse.getName());
+		serviceProvider.setEmail(serviceProviderResponse.getEmail());
 
-		if (bookingDto.getCarId() == null) {
-			throw new IllegalArgumentException("Car object cannot be null");
-		}
-
+		Station station = new Station(stationResponse.getName(), stationResponse.getAddress(),
+				stationResponse.getLatitude(), stationResponse.getLongitude(), serviceProvider);
 		CarResponse carResponse = carServiceStub.getCar(CarRequest.newBuilder().setId(bookingDto.getCarId()).build());
+		Car car = new Car();
+		car.setCarId(carResponse.getId());
+		car.setRegisterationPlate(carResponse.getLicensePlate());
+		car.setUser(user);
 
-		// Map the CarResponse to your local Car entity/model
-		Car car = mapCarResponseToCar(carResponse);
+		// 1. Build the GetWashingProgramRequest
+		GetWashingProgramRequest request = GetWashingProgramRequest.newBuilder().setId(bookingDto.getWashingProgramId())
+				.build();
 
-		if (car == null) {
-			logger.error("The car " + booking.getCar().getRegisterationPlate() + "  is not registered in the system!");
-			throw new IllegalArgumentException("There is no car in the system with registeration number "
-					+ booking.getCar().getRegisterationPlate());
+		// 1. Build the GetWashingProgramRespose
+		CarWashingProgramResponse progRes = carWashingProgramStub.getProgramById(request);
+
+		CarWashingProgram program;
+		switch (progRes.getProgramType()) {
+		case "foam" -> program = new FoamCarWashingProgram();
+		case "high_pressure" -> program = new HighPressureCarWashingProgram();
+		case "touch_less" -> program = new TouchlessCarWashingProgram();
+		default -> throw new IllegalArgumentException("Unknown program type");
 		}
+		program.setId(progRes.getId());
+		program.setProgramType(progRes.getProgramType());
+		program.setDescription(progRes.getDescription());
+		program.setPrice(progRes.getPrice());
 
+		Booking booking = new Booking();
+		booking.setUser(user);
 		booking.setCar(car);
+		booking.setStation(station);
+		booking.setWashingProgram(program);
+		booking.setToken(userResponse.getToken());
 
-		if (bookingDto.getWashingProgramId() == null) {
-			throw new IllegalArgumentException("Washing program object cannot be null");
+		Booking savedBooking = bookingService.saveBooking(booking);
+
+		// FCM Notification
+		if (user.getToken() != null && !user.getToken().isBlank()) {
+			Message message = Message.builder()
+					.setNotification(Notification.builder().setTitle("Booking Confirmed 🚗")
+							.setBody("Wash booked for: " + car.getRegisterationPlate()).build())
+					.setToken(user.getToken()).build();
+			try {
+				FirebaseMessaging.getInstance().send(message);
+			} catch (FirebaseMessagingException e) {
+				logger.error("FCM Error", e);
+			}
 		}
-		CarWashingProgramRequest carWashingProgramRequest = CarWashingProgramRequest.newBuilder()
-			    .setId(bookingDto.getWashingProgramId())
-			    .build();
 
-         CarWashingProgramResponse response = carWashingProgramStub.getCarWashingProgram(carWashingProgramRequest);
-
-
-         CarWashingProgram washingProgram;
-         switch (response.getProgramType()) {
-         case "foam":
-             washingProgram = new FoamCarWashingProgram();
-             break;
-         case "high_pressure":
-             washingProgram = new HighPressureCarWashingProgram();
-             break;
-         case "touch_less":
-             washingProgram = new TouchlessCarWashingProgram();
-             break;
-         default:
-             throw new IllegalArgumentException("Unknown washing program type: " + response.getProgramType());
-     }
-         washingProgram.setId(response.getId());
-         washingProgram.setProgramType(response.getProgramType());
-         washingProgram.setDescription(response.getDescription());
-         washingProgram.setPrice(response.getPrice());
-		
-		booking.setWashingProgram(washingProgram);
-
-
-		Booking newBooking = new Booking();
-		newBooking.setUser(user); 
-		newBooking.setCar(car);  
-		newBooking.setStation(station); 
-		newBooking.setWashingProgram(washingProgram);
-		// Only send notification if user has a valid Firebase device token
-		String userDeviceToken = newBooking.getUser().getToken();
-		if (userDeviceToken != null && !userDeviceToken.isBlank()) {
-		    Message message = Message.builder()
-		        .setNotification(Notification.builder()
-		            .setTitle("Booking Confirmed 🚗")
-		            .setBody("You booked a wash for: " + newBooking.getCar().getRegisterationPlate())
-		            .build())
-		        .setToken(userDeviceToken) // from mobile app
-		        .build();
-
-		    try {
-		        String response1 = FirebaseMessaging.getInstance().send(message);
-		        System.out.println("✅ Successfully sent message: " + response1);
-		    } catch (FirebaseMessagingException e) {
-		        System.err.println("❌ Failed to send message: " + e.getMessage());
-		    }
-		}
-			logger.info("The booking for " + booking.getCar().getRegisterationPlate() + " is saved successfully!");
-			return new ResponseEntity<>(booking, HttpStatus.CREATED);
-	
-
+		return new ResponseEntity<>(savedBooking, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/{id}")

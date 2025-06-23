@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 	"com.zwash.booking.serviceImpl",
     "com.zwash.booking.repository",
     "com.zwash.common",
-    "com.zwash.auth",	
+    "com.zwash.auth",
 })
 @EntityScan(basePackages = {"com.zwash.common.pojos","com.zwash.booking.pojos"})
 public class AppConfig {
