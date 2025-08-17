@@ -164,7 +164,9 @@ public class BookingController {
 		TokenRequest tokenRequest = TokenRequest.newBuilder().setToken(bookingDto.getToken()).build();
 		UserResponse userResponse;
 		try {
+			System.out.println("Now getting gprc from the users service");
 		    userResponse = userStub.getUserFromToken(tokenRequest);
+		    System.out.println("Now Done getting gprc from the users service");
 		} catch (Exception e) {
 		    logger.error("Failed to get user from token", e);
 		    throw e;
@@ -235,7 +237,8 @@ public class BookingController {
 				logger.error("FCM Error", e);
 			}
 		}
-
+		
+		
 		return new ResponseEntity<>(savedBooking, HttpStatus.CREATED);
 	}
 
