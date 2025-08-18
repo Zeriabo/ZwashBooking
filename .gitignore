@@ -5,3 +5,6 @@
 build
 logs
 /target
+/target
+logs
+*.gz
