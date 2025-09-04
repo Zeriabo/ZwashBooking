@@ -1,0 +1,13 @@
+grpc:
+  user-service:
+    host: zwash-user
+    port: 9192
+  station-service:
+    host: zwash-station
+    port: 9193
+  car-service:
+    host: zwash-car
+    port: 9194
+  booking-service:
+    host: zwash-booking
+    port: 9095

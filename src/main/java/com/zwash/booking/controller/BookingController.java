@@ -2,15 +2,13 @@ package com.zwash.booking.controller;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,71 +20,62 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.zwash.booking.util.*;
+import com.zwash.common.shared.CarResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-import com.zwash.booking.config.KafkaTopicConfig;
-import com.zwash.booking.service.BookingService;
-import com.zwash.common.dto.BookingDTO;
 import com.zwash.common.exceptions.CarDoesNotExistException;
 import com.zwash.common.exceptions.UserIsNotFoundException;
-import com.zwash.common.grpc.CarRequest;
-import com.zwash.common.grpc.CarResponse;
-import com.zwash.common.grpc.CarServiceGrpc;
-import com.zwash.common.grpc.CarWashingProgramResponse;
-import com.zwash.common.grpc.CarWashingProgramServiceGrpc;
-import com.zwash.common.grpc.GetWashingProgramRequest;
-import com.zwash.common.grpc.ServiceProviderResponse;
-import com.zwash.common.grpc.StationRequest;
-import com.zwash.common.grpc.StationResponse;
-import com.zwash.common.grpc.StationServiceGrpc;
-import com.zwash.common.grpc.TokenRequest;
-import com.zwash.common.grpc.UserResponse;
-import com.zwash.common.grpc.UserServiceGrpc;
+import com.zwash.common.grpc.UserServiceProto.UserResponse;
+import com.zwash.booking.config.KafkaTopicConfig;
+import com.zwash.common.car.grpc.CarServiceOuterClass;
+import com.zwash.common.dto.BookingDTO;
+import com.zwash.booking.grpc.CarServiceGrpcClient;
+import com.zwash.booking.grpc.CarWashingProgramGrpcClient;
+import com.zwash.booking.grpc.GrpcStationClient;
+import com.zwash.booking.grpc.GrpcUserClient;
 import com.zwash.common.pojos.Booking;
+import com.zwash.booking.service.BookingService;
+import com.zwash.booking.service.CarWashService;
+import com.zwash.booking.util.Utility;
 import com.zwash.common.pojos.Car;
-import com.zwash.common.pojos.CarWashingProgram;
-import com.zwash.common.pojos.FoamCarWashingProgram;
-import com.zwash.common.pojos.HighPressureCarWashingProgram;
-import com.zwash.common.pojos.ServiceProvider;
-import com.zwash.common.pojos.Station;
-import com.zwash.common.pojos.TouchlessCarWashingProgram;
 import com.zwash.common.pojos.User;
-
+import jakarta.transaction.Transactional;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.transaction.Transactional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("v1/bookings")
-@Tag(name = "Booking API")
 public class BookingController {
 
 	@Autowired
 	private KafkaTemplate<String, String> kafkaTemplate;
 	@Autowired
 	private BookingService bookingService;
-
 	@Autowired
-	private UserServiceGrpc.UserServiceBlockingStub userStub;
+	private CarWashService carWashService;
 	@Autowired
-	private StationServiceGrpc.StationServiceBlockingStub stationStub;
+	private GrpcUserClient grpcUserClient;
 	@Autowired
-	private CarServiceGrpc.CarServiceBlockingStub carServiceStub;
+	private GrpcStationClient grpcStationClient;
 	@Autowired
-	private CarWashingProgramServiceGrpc.CarWashingProgramServiceBlockingStub carWashingProgramStub;
+	private CarServiceGrpcClient grpcCarServiceClient;
+	@Autowired
+	private CarWashingProgramGrpcClient grpcCarWashingProgramClient;
 
 	Logger logger = LoggerFactory.getLogger(BookingController.class);
 
-	@GetMapping(value = "/{id}")
-	@Operation(summary = "Get a booking by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successfully retrieved booking"),
-			@ApiResponse(responseCode = "404", description = "Booking not found") })
+	@GetMapping("/{id}")
+	@Operation(summary = "Get booking by id", description = "Retrieve a booking by its id")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Successfully retrieved booking"),
+			@ApiResponse(responseCode = "404", description = "Booking not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
 		Booking booking = bookingService.getBookingById(id);
 		if (booking != null) {
@@ -97,50 +86,53 @@ public class BookingController {
 	}
 
 	@GetMapping
-	@Operation(summary = "Get all bookings")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings"),
-			@ApiResponse(responseCode = "404", description = "Bookings not found") })
-	public ResponseEntity<List<BookingDTO>> getAllBookings() throws Exception {
+	@Operation(summary = "Get all bookings", description = "Retrieve all bookings")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings"),
+			@ApiResponse(responseCode = "404", description = "Bookings not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
+	public ResponseEntity<List<com.zwash.common.dto.BookingDTO>> getAllBookings() throws Exception {
 		try {
-			List<BookingDTO> bookingList = bookingService.getAllBookings();
-			return new ResponseEntity<>(bookingList, HttpStatus.OK);
+			List<com.zwash.common.dto.BookingDTO> list =  bookingService.getAllBookings();
+			return new ResponseEntity<>(list, HttpStatus.OK);
 		} catch (Exception ex) {
-			System.out.println(ex);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
 	@GetMapping("/user/{id}")
-	@Operation(summary = "Get bookings belong to a User")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings"),
-			@ApiResponse(responseCode = "404", description = "Bookings not found") })
+	@Operation(summary = "Get bookings for a user", description = "Retrieve all bookings belonging to a user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Successfully retrieved bookings"),
+			@ApiResponse(responseCode = "404", description = "Bookings not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<List<BookingDTO>> getUsersBookings(@PathVariable("id") Long userId,
 			@RequestBody(required = false) String reqJson) throws Exception {
 		try {
 			kafkaTemplate.send(KafkaTopicConfig.getUserTopic().name(), userId.toString());
 
-			UserResponse userResponse = userStub.getUserById(
-				    com.zwash.common.grpc.UserIdRequest.newBuilder().setId(userId).build()
-				);
-			User user = new User();
-			user.setId(userResponse.getId());
-			user.setFirstName(userResponse.getFirstName());
-			user.setActive(userResponse.getActive());
-			user.setAdmin(userResponse.getAdmin());
-			user.setLastName(userResponse.getLastName());
-			user.setToken(userResponse.getToken());
-         
-			List<BookingDTO> list = bookingService.getBookingsByUser(user);
-			return new ResponseEntity<>(list, HttpStatus.OK);
+			CompletableFuture<User> userFuture = new CompletableFuture<>();
+			// Set up a callback to handle the asynchronous user retrieval
+			userFuture.thenApplyAsync(user -> {
+				try {
+					// If the user is null, handle the scenario (throw exception, return appropriate
+					// response, etc.)
+					if (user == null) {
+						throw new UserIsNotFoundException("User not found for id: " + userId);
+					}
+					// If the user is found, get bookings and return the response
+					List<BookingDTO> list = bookingService.getBookingsByUser(user);
+					return new ResponseEntity<>(list, HttpStatus.OK);
+				} catch (UserIsNotFoundException ex) {
+					return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				} catch (Exception ex) {
+					return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			});
 
-		} catch (ExecutionException e) {
-			if (e.getCause() instanceof UserIsNotFoundException) {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (Exception e) {
+		} catch (Exception ex) {
+
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		return new ResponseEntity<>(null, HttpStatus.OK);
 	}
 
 	private User getUserFromKafkaMessage(String reqJson) throws UserIsNotFoundException {
@@ -155,99 +147,95 @@ public class BookingController {
 	@PostMapping
 	@Transactional
 	@Operation(summary = "Create a booking")
-	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created booking"),
-			@ApiResponse(responseCode = "400", description = "Invalid request") })
-	public ResponseEntity<Booking> createBooking(@RequestBody BookingDTO bookingDto) throws Exception {
-		if (bookingDto == null)
-			throw new IllegalArgumentException("Booking cannot be null");
-
-		TokenRequest tokenRequest = TokenRequest.newBuilder().setToken(bookingDto.getToken()).build();
-		UserResponse userResponse;
-		try {
-			System.out.println("Now getting gprc from the users service");
-		    userResponse = userStub.getUserFromToken(tokenRequest);
-		    System.out.println("Now Done getting gprc from the users service");
-		} catch (Exception e) {
-		    logger.error("Failed to get user from token", e);
-		    throw e;
-		}
-		User user = new User();
-		user.setId(userResponse.getId());
-		user.setUsername(userResponse.getUsername());
-		user.setFirstName(userResponse.getFirstName());
-		user.setLastName(userResponse.getLastName());
-		user.setDateOfBirth(userResponse.getDateOfBirth());
-		user.setActive(userResponse.getActive());
-		user.setAdmin(userResponse.getAdmin());
-		user.setToken(userResponse.getToken());
-
-		StationResponse stationResponse = stationStub
-				.getStation(StationRequest.newBuilder().setId(bookingDto.getStationId()).build());
-		ServiceProviderResponse serviceProviderResponse = stationResponse.getServiceProvider();
-		ServiceProvider serviceProvider = new ServiceProvider();
-		serviceProvider.setId(serviceProviderResponse.getId());
-		serviceProvider.setName(serviceProviderResponse.getName());
-		serviceProvider.setEmail(serviceProviderResponse.getEmail());
-
-		Station station = new Station(stationResponse.getName(), stationResponse.getAddress(),
-				stationResponse.getLatitude(), stationResponse.getLongitude(), serviceProvider);
-		CarResponse carResponse = carServiceStub.getCar(CarRequest.newBuilder().setId(bookingDto.getCarId()).build());
-		Car car = new Car();
-		car.setCarId(carResponse.getId());
-		car.setRegisterationPlate(carResponse.getLicensePlate());
-		car.setUser(user);
-
-		// 1. Build the GetWashingProgramRequest
-		GetWashingProgramRequest request = GetWashingProgramRequest.newBuilder().setId(bookingDto.getWashingProgramId())
-				.build();
-
-		// 1. Build the GetWashingProgramRespose
-		CarWashingProgramResponse progRes = carWashingProgramStub.getProgramById(request);
-
-		CarWashingProgram program;
-		switch (progRes.getProgramType()) {
-		case "foam" -> program = new FoamCarWashingProgram();
-		case "high_pressure" -> program = new HighPressureCarWashingProgram();
-		case "touch_less" -> program = new TouchlessCarWashingProgram();
-		default -> throw new IllegalArgumentException("Unknown program type");
-		}
-		program.setId(progRes.getId());
-		program.setProgramType(progRes.getProgramType());
-		program.setDescription(progRes.getDescription());
-		program.setPrice(progRes.getPrice());
+	@Parameters({ @Parameter(name = "bookingDto", description = "BookingDTO.", required = true) })
+	@ApiResponses({ @ApiResponse(responseCode = "201", description = "Successfully created booking"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
+	public ResponseEntity<Booking> createBooking(@RequestBody BookingDTO bookingDto)
+			throws Exception {
 
 		Booking booking = new Booking();
-		booking.setUser(user);
-		booking.setCar(car);
-		booking.setStation(station);
-		booking.setWashingProgram(program);
-		booking.setToken(userResponse.getToken());
 
-		Booking savedBooking = bookingService.saveBooking(booking);
-
-		// FCM Notification
-		if (user.getToken() != null && !user.getToken().isBlank()) {
-			Message message = Message.builder()
-					.setNotification(Notification.builder().setTitle("Booking Confirmed 🚗")
-							.setBody("Wash booked for: " + car.getRegisterationPlate()).build())
-					.setToken(user.getToken()).build();
-			try {
-				FirebaseMessaging.getInstance().send(message);
-			} catch (FirebaseMessagingException e) {
-				logger.error("FCM Error", e);
-			}
+		if (bookingDto == null) {
+			throw new IllegalArgumentException("Booking  cannot be null");
 		}
-		
-		
-		return new ResponseEntity<>(savedBooking, HttpStatus.CREATED);
+
+		if (bookingDto.getToken() != null) {
+			booking.setToken(bookingDto.getToken());
+		}
+		UserResponse grpcUser = grpcUserClient.getUserFromToken(bookingDto.getToken());
+		if (grpcUser == null)
+			throw new UserIsNotFoundException("User not found for token");
+
+		User user = Utility.mapGrpcUser(grpcUser);
+		booking.setUser(user);
+
+		if (bookingDto.getStationId() == null) {
+			throw new IllegalArgumentException("Station object cannot be null");
+		}
+		if (bookingDto.getStationId() == null) {
+		    throw new IllegalArgumentException("Station object cannot be null");
+		}
+		com.zwash.common.pojos.Station station = grpcStationClient.getStation(bookingDto.getStationId());
+		if (station == null) {
+		    throw new IllegalArgumentException("Station not found with id: " + bookingDto.getStationId());
+		}
+		booking.setStation(station);
+
+		if (bookingDto.getCarId() == null) {
+			throw new IllegalArgumentException("Car object cannot be null");
+		}
+		//Car car = null;// carService.getCar(bookingDto.getCarId());
+		Car car = grpcCarServiceClient.getCar(bookingDto.getCarId());
+		if (car == null) {
+			logger.error("The car " + booking.getCar().getRegisterationPlate() + "  is not registered in the system!");
+			throw new IllegalArgumentException("There is no car in the system with registeration number "
+					+ booking.getCar().getRegisterationPlate());
+		}
+
+		booking.setCar(car);
+
+		if (bookingDto.getWashingProgramId() == null) {
+			throw new IllegalArgumentException("Washing program object cannot be null");
+		}
+//		com.zwash.common.pojos.CarWashingProgram washingProgram = null;// washingProgramService.getProgramById(bookingDto.getWashingProgramId());
+		com.zwash.common.pojos.CarWashingProgram washingProgram = 
+				grpcCarWashingProgramClient.getProgramById(bookingDto.getWashingProgramId());
+
+		booking.setWashingProgram(washingProgram);
+
+		Booking newBooking = null;// bookingService.saveBooking(booking);
+		if (newBooking instanceof Booking) {
+			// Construct the message
+			Message message = Message.builder()
+					.setNotification(Notification.builder().setTitle("Booking made!")
+							.setBody("You have made a booking for car: " + booking.getCar().getRegisterationPlate())
+							.build())
+					.setToken(booking.getUser().getToken())// to get from the react native app later device token
+					.build();
+
+			// Send the message
+			try {
+				String response = FirebaseMessaging.getInstance().send(message);
+				System.out.println("Successfully sent message: " + response);
+			} catch (FirebaseMessagingException e) {
+				System.out.println("Failed to send message: " + e.getMessage());
+			}
+			logger.info("The booking for " + booking.getCar().getRegisterationPlate() + " is saved successfully!");
+			return new ResponseEntity<>(booking, HttpStatus.CREATED);
+		} else {
+			return new ResponseEntity<>(booking, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
 	}
 
 	@PutMapping("/{id}")
 	@Transactional
 	@Operation(summary = "Update an existing booking")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Booking updated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request. Check input parameters"),
-			@ApiResponse(responseCode = "404", description = "Booking with provided id not found") })
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Booking updated successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "404", description = "Booking not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking newBooking) {
 		if (newBooking == null) {
 			throw new IllegalArgumentException("Booking object cannot be null");
@@ -262,11 +250,11 @@ public class BookingController {
 			throw new IllegalArgumentException("Washing program object cannot be null");
 		}
 
-		Booking booking = null;// bookingService.getBookingById(id);
+		Booking booking = bookingService.getBookingById(id);
 		if (booking != null) {
 			booking.setCar(newBooking.getCar());
 			booking.setWashingProgram(newBooking.getWashingProgram());
-			// bookingService.saveBooking(booking);
+			 bookingService.saveBooking(booking);
 			logger.info(
 					"the  booking for " + booking.getCar().getRegisterationPlate() + " has been updated successfully");
 			// Construct the message
@@ -295,12 +283,14 @@ public class BookingController {
 	@PostMapping("/{id}")
 	@Transactional
 	@Operation(summary = "Execute a Wash")
-	@ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Wash executed successfully"),
-			@ApiResponse(responseCode = "404", description = "Booking with provided id not found") })
+	@ApiResponses({ @ApiResponse(responseCode = "201", description = "Wash executed successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "404", description = "Booking not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<Void> executeBookingWash(@PathVariable Long id) {
-		Booking booking = null;// bookingService.getBookingById(id);
+		Booking booking =  bookingService.getBookingById(id);
 		if (booking != null) {
-			// carWashService.executeCarWash(booking);
+		   carWashService.executeCarWash(booking);
 
 			logger.info(
 					"the  booking for " + booking.getCar().getRegisterationPlate() + " has been executed successfully");
@@ -317,15 +307,17 @@ public class BookingController {
 	@DeleteMapping("/{id}")
 	@Transactional
 	@Operation(summary = "Delete a booking by id")
-	@ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Booking deleted successfully"),
-			@ApiResponse(responseCode = "404", description = "Booking with provided id not found") })
+	@ApiResponses({ @ApiResponse(responseCode = "204", description = "Booking deleted successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request"),
+			@ApiResponse(responseCode = "404", description = "Booking not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
-		Booking booking = null;// bookingService.getBookingById(id);
+		Booking booking =  bookingService.getBookingById(id);
 		if (booking != null) {
 			logger.info(
 					"the  booking for " + booking.getCar().getRegisterationPlate() + " has been deleted successfully");
 
-			// bookingService.deleteBooking(booking);
+			 bookingService.deleteBooking(booking);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} else {
 			logger.error("Booking with car " + booking.getCar().getRegisterationPlate() + " not deleted!");
@@ -334,18 +326,27 @@ public class BookingController {
 		}
 	}
 
-	@GetMapping("validate/{registrationPlate}")
+	@GetMapping("/validate/{registrationPlate}")
 	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "Check if a booking exists for a given car registration plate")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Request processed successfully"),
-			@ApiResponse(responseCode = "404", description = "Car with provided registration plate not found") })
+	@Operation(summary = "Check if booking exists for a car", description = "Validate booking by car registration plate")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Request processed successfully"),
+			@ApiResponse(responseCode = "404", description = "Car not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error") })
 	public ResponseEntity<Boolean> isBookingExistsForCar(@PathVariable String registrationPlate)
 			throws CarDoesNotExistException {
-		// Car car =null;
-		// carService.getCar(registrationPlate);
-		// Car not found
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-
+		try {
+		CarServiceOuterClass.CarResponse car = grpcCarServiceClient.getCarByPlate(registrationPlate);
+	        if (car == null) {
+	            throw new CarDoesNotExistException("Car not found with registration plate: " + registrationPlate);
+	        }
+	        boolean bookingExists = bookingService.isBookingExistsForCar(registrationPlate); 
+	        return ResponseEntity.ok(bookingExists);
+	        
+		 } catch (CarDoesNotExistException ex) {
+		        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+		    } catch (Exception ex) {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+		    }
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
@@ -359,24 +360,4 @@ public class BookingController {
 				HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	private Station mapStationResponseToStation(StationResponse response) {
-		Station station = new Station();
-		station.setId(response.getId());
-		station.setName(response.getName());
-		station.setAddress(response.getAddress());
-		station.setLatitude(response.getLatitude());
-		station.setLongitude(response.getLongitude());
-
-		return station;
-	}
-
-	private Car mapCarResponseToCar(CarResponse response) throws Exception {
-		Car car = new Car();
-		car.setCarId(response.getId());
-		car.setManufacture(response.getBrand());
-		car.setRegisterationPlate(response.getLicensePlate());
-//	    car.setYear(response.get);
-		// map other relevant fields...
-		return car;
-	}
 }

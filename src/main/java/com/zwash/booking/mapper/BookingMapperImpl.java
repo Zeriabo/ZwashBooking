@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.zwash.booking.grpc.CarServiceGrpcClient;
 import com.zwash.booking.service.CarWashingProgramService;
-import com.zwash.car.exceptions.CarDoesNotExistException;
-import com.zwash.car.service.CarService;
 import com.zwash.common.dto.BookingDTO;
+import com.zwash.common.exceptions.CarDoesNotExistException;
 import com.zwash.common.exceptions.UserIsNotFoundException;
 import com.zwash.common.pojos.Booking;
 import com.zwash.common.pojos.Car;
@@ -20,8 +20,10 @@ import com.zwash.common.pojos.CarWashingProgram;
 
 @Component
 public class BookingMapperImpl implements BookingMapper {
+
 	@Autowired
-	CarService carService;
+    private CarServiceGrpcClient carServiceGrpcClient;
+
 
 	@Autowired
 	CarWashingProgramService carWashingProgramService;
@@ -47,7 +49,12 @@ public class BookingMapperImpl implements BookingMapper {
         }
         Booking booking = new Booking();
         booking.setId(bookingDTO.getId());
-        Car car =carService.getCar(bookingDTO.getCarId());
+        Car car;
+        try {
+            car = carServiceGrpcClient.getCar(bookingDTO.getCarId());
+        } catch (Exception e) {
+            throw new CarDoesNotExistException("Car with ID " + bookingDTO.getCarId() + " does not exist.");
+        }
         booking.setCar(car);
         CarWashingProgram carWashingProgram  = carWashingProgramService.getProgramById(bookingDTO.getWashingProgramId());
         booking.setWashingProgram(carWashingProgram);
@@ -65,8 +72,11 @@ public class BookingMapperImpl implements BookingMapper {
         return bookingDtos.stream().map(t -> {
 			try {
 				return toBooking(t);
-			} catch (UserIsNotFoundException | CarDoesNotExistException e) {
+			} catch (UserIsNotFoundException e) {
 
+				e.printStackTrace();
+			} catch (CarDoesNotExistException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return null;
